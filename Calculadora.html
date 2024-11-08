@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Inversión en Publicidad</title>
+<!-- Incorporar Bootstrap para mejorar el diseño -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+    }
+    .container {
+        max-width: 600px;
+        margin-top: 40px;
+        padding: 20px;
+        background: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+    }
+    .result {
+        font-weight: bold;
+        color: #343a40;
+        display: none; /* Ocultar resultados inicialmente */
+    }
+    .result h3 {
+        color: #007bff;
+    }
+    .highlight {
+        font-size: 1.2em;
+        color: #007bff;
+    }
+    .error-text {
+        color: red;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="text-center text-primary">Calculadora de Inversión en Publicidad</h2>
+    <p class="text-muted text-center">Optimiza tus metas publicitarias para alcanzar el éxito</p>
+    
+    <!-- Sección de Entrada de Datos -->
+    <div class="form-group">
+        <label for="salesGoal">¿Cuánto quieres vender? ($)</label>
+        <input type="number" id="salesGoal" class="form-control" placeholder="Ej: 1000">
+    </div>
+
+    <div class="form-group">
+        <label for="averageTicket">¿Cuál es tu ticket promedio? ($)</label>
+        <input type="number" id="averageTicket" class="form-control" placeholder="Ej: 30">
+    </div>
+
+    <div class="form-group">
+        <label for="costPerCustomer">¿Cuánto estás dispuesto a pagar por un nuevo cliente? ($)</label>
+        <input type="number" id="costPerCustomer" class="form-control" placeholder="Ej: 15">
+        <div id="costError" class="error-text"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="closingRate">% de Cierre de Mensajes</label>
+        <input type="number" id="closingRate" class="form-control" placeholder="Ej: 20">
+        <div id="closingRateError" class="error-text"></div>
+    </div>
+
+    <!-- Botón para Calcular -->
+    <button onclick="calculate()" class="btn btn-primary btn-block mt-4">Calcular Inversión</button>
+
+    <!-- Sección de Resultados Calculados, inicialmente oculta -->
+    <div class="result mt-4" id="resultsSection">
+        <h3 class="text-center">Resultados Calculados</h3>
+        <p><span class="highlight">Inversión Necesaria:</span> <span id="requiredInvestment" class="highlight">$0.00</span></p>
+        <p>Cantidad de Mensajes Necesarios para Generar Ventas: <span id="requiredMessages">0</span></p>
+        <p>Costo por Cliente Potencial o Conversación Objetivo: <span id="targetCostPerLead">$0.00</span></p>
+        <p>Cantidad de Compras Generadas: <span id="requiredSales">0</span></p>
+        <p>Costo por Compra Objetivo: <span id="targetCostPerSale">$0.00</span></p>
+        <p>Retorno a la Inversión en Publicidad (ROAS) Objetivo: <span id="roas">0.00</span></p>
+    </div>
+</div>
+
+<!-- Agregar JavaScript de Bootstrap y jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+function calculate() {
+    const salesGoal = parseFloat(document.getElementById("salesGoal").value) || 0;
+    const averageTicket = parseFloat(document.getElementById("averageTicket").value) || 0;
+    const costPerCustomer = parseFloat(document.getElementById("costPerCustomer").value) || 0;
+    const closingRate = parseFloat(document.getElementById("closingRate").value) || 0;
+
+    const costError = document.getElementById("costError");
+    const closingRateError = document.getElementById("closingRateError");
+
+    // Limpiar mensajes de error previos
+    costError.innerText = "";
+    closingRateError.innerText = "";
+
+    // Validación del % de cierre de mensajes
+    if (closingRate < 5) {
+        closingRateError.innerText = "El % de cierre de mensajes debe ser al menos 5%";
+        return;
+    }
+
+    // Validación del costo por cliente en relación al ticket promedio
+    if (costPerCustomer < averageTicket * 0.1) {
+        costError.innerText = "El costo por cliente no puede ser menor al 10% del ticket promedio";
+        return;
+    } else if (costPerCustomer > averageTicket) {
+        costError.innerText = "El costo por cliente no puede ser mayor al 100% del ticket promedio";
+        return;
+    }
+
+    // Cálculo del Número de Ventas Necesarias
+    const requiredSales = averageTicket > 0 ? Math.ceil(salesGoal / averageTicket) : 0;
+    document.getElementById("requiredSales").innerText = requiredSales;
+
+    // Costo por Compra Objetivo es igual a "¿Cuánto estás dispuesto a pagar por un nuevo cliente?"
+    document.getElementById("targetCostPerSale").innerText = "$" + costPerCustomer.toFixed(2);
+
+    // Cálculo de la Inversión Necesaria
+    const requiredInvestment = requiredSales * costPerCustomer;
+    document.getElementById("requiredInvestment").innerText = "$" + requiredInvestment.toFixed(2);
+
+    // Cálculo de la Cantidad de Mensajes Necesarias para Generar Ventas
+    const requiredMessages = closingRate > 0 ? requiredSales / (closingRate / 100) : 0;
+    document.getElementById("requiredMessages").innerText = Math.ceil(requiredMessages);
+
+    // Cálculo del Costo por Cliente Potencial o Conversación Objetivo basado en inversión total y mensajes necesarios
+    const targetCostPerLead = requiredMessages > 0 ? requiredInvestment / requiredMessages : 0;
+    document.getElementById("targetCostPerLead").innerText = "$" + targetCostPerLead.toFixed(2);
+
+    // Cálculo del ROAS Objetivo
+    const roas = requiredInvestment > 0 ? salesGoal / requiredInvestment : 0;
+    document.getElementById("roas").innerText = roas.toFixed(2);
+
+    // Mostrar la sección de resultados
+    document.getElementById("resultsSection").style.display = "block";
+}
+</script>
+
+</body>
+</html>
